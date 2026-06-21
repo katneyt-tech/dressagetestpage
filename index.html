@@ -124,6 +124,9 @@
             color: #0b3022;
             font-weight: 600;
             display: none;
+            background: #f0f4f2;
+            padding: 8px;
+            border-radius: 6px;
         }
 
         /* Knoppen */
@@ -246,6 +249,7 @@
 
     <div class="container">
         
+        <!-- Onze Visie Sectie -->
         <div class="card">
             <h2>Onze Visie: Het Hele Paardenlichaam</h2>
             <div class="guideline-box">
@@ -254,6 +258,7 @@
             </div>
         </div>
 
+        <!-- Video Upload Sectie -->
         <div class="card">
             <h2>Video Uploaden voor Analyse</h2>
             <div class="upload-area" id="dropZone" onclick="document.getElementById('videoInput').click()">
@@ -261,17 +266,19 @@
                 <p class="sub-text">Sleep het bestand hiernaartoe (MP4, MOV)</p>
                 <div class="file-info" id="fileInfo"></div>
             </div>
-            <input type="file" id="videoInput" accept="video/mp4,video/quicktime">
+            <input type="file" id="videoInput">
             
             <button class="btn" id="analyzeBtn" disabled>Analyseer Video</button>
         </div>
 
+        <!-- Wacht/Laad Scherm -->
         <div class="loading-container" id="loadingState">
             <div class="spinner"></div>
             <p style="font-size: 10.5pt; color: #475569; font-weight: 500;">Visuele scan bezig...</p>
             <p style="font-size: 9pt; color: #94a3b8; margin-top: 2px;">De AI analyseert de biomechanica van je paard. Dit kan tot een minuut duren.</p>
         </div>
 
+        <!-- Resultaten Sectie -->
         <div class="results-section" id="resultsSection">
             <div class="results-header">
                 📊 Klassiek Analyse Rapport
@@ -334,14 +341,16 @@
         });
 
         function handleFile(file) {
-            if (file.type.startsWith('video/')) {
+            const fileName = file.name.toLowerCase();
+            // Extra soepele controle: check type óf bestandsextensie
+            if (file.type.startsWith('video/') || fileName.endsWith('.mp4') || fileName.endsWith('.mov') || fileName.endsWith('.qt')) {
                 selectedFile = file;
                 fileInfo.textContent = `Geselecteerd: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB)`;
                 fileInfo.style.display = 'block';
-                analyzeBtn.disabled = false;
+                analyzeBtn.disabled = false; // Maak de knop klikbaar!
                 resultsSection.style.display = 'none';
             } else {
-                alert('Selecteer aub een echt videobestand (zoals MP4 of MOV).');
+                alert('Selecteer a.u.b. een geldig videobestand (zoals MP4 of MOV).');
             }
         }
 
@@ -358,14 +367,55 @@
             reader.readAsDataURL(selectedFile);
 
             reader.onloadend = async () => {
-                // Haal de pure Base64 code op (achter de komma)
                 const pureBase64 = reader.result.split(',')[1];
 
                 try {
-                    // Stuur het verzoek naar de Vercel api/analyze server
                     const response = await fetch('/api/analyze', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body:
+                        body: JSON.stringify({
+                            videoBase64: pureBase64,
+                            mimeType: selectedFile.type || "video/mp4"
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    loadingState.style.display = 'none';
+                    analyzeBtn.disabled = false;
+
+                    if (response.ok) {
+                        resultsSection.style.display = 'block';
+                        analysisText.textContent = result.analysis;
+
+                        // Filter het cijfer uit de tekst
+                        let score = "7.0"; 
+                        const scoreMatch = result.analysis.match(/(?:score|cijfer)[:\s]+([0-9][.,][0-9]|[0-9]+)/i);
+                        
+                        if (scoreMatch) {
+                            score = scoreMatch[1].replace(',', '.');
+                        } else {
+                            const numbers = result.analysis.match(/\b([1-9](\.[0-9])?|10)\b/g);
+                            if (numbers && numbers.length > 0) {
+                                score = numbers[numbers.length - 1];
+                            }
+                        }
+                        
+                        scoreDisplay.textContent = score;
+                    } else {
+                        alert("⚠️ Fout bij AI-verbinding: " + (result.error || "Onbekende fout"));
+                    }
+
+                } catch (error) {
+                    console.error("Verzendfout:", error);
+                    loadingState.style.display = 'none';
+                    analyzeBtn.disabled = false;
+                    alert("Er ging iets mis tijdens het verzenden van de video.");
+                }
+            };
+        });
+    </script>
+</body>
+</html>
