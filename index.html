@@ -61,7 +61,7 @@
             font-size: 14px;
         }
 
-        /* Upload */
+        /* Upload Area */
         .upload-area {
             border: 2px dashed #b3c2ba;
             border-radius: 10px;
@@ -110,7 +110,7 @@
             background: #fafbfa; border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; margin-bottom: 15px;
         }
         .analysis-block h3 { font-size: 15px; color: var(--primary-green); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-        .analysis-block p { font-size: 14px; color: var(--text-main); }
+        .analysis-block p { font-size: 14px; color: var(--text-main); white-space: pre-line; }
 
         .cta-box { background: linear-gradient(135deg, var(--primary-green) 0%, #153d29 100%); color: white; border-radius: 10px; padding: 35px 20px; text-align: center; margin-top: 40px; border-bottom: 4px solid var(--accent-gold); }
         .btn-cta { background: var(--accent-gold); color: var(--primary-green); display: inline-block; text-decoration: none; padding: 14px 30px; border-radius: 6px; font-weight: 700; font-size: 14px; text-transform: uppercase; margin-top: 15px; }
@@ -170,22 +170,22 @@
 
             <div class="analysis-block" style="border-left: 4px solid #4a90e2;">
                 <h3>👁️ Visuele AI Observatie</h3>
-                <p id="visueleCheckText">Herkenning van de combinatie...</p>
+                <p id="visueleCheckText">Analyseert...</p>
             </div>
 
             <div class="analysis-block" style="border-left: 4px solid #2ecc71;">
                 <h3>🔄 Cirkel van Energie & Ruggebruik</h3>
-                <p id="bewegingText">Analyse van de lossigheid en achterhand...</p>
+                <p id="bewegingText">Analyseert...</p>
             </div>
 
             <div class="analysis-block" style="border-left: 4px solid var(--accent-gold);">
                 <h3>🎯 Aanleuning & Neus-Loodlijn Evaluatie</h3>
-                <p id="neusText">Beoordeling van het contact en de hoofd-halshouding...</p>
+                <p id="neusText">Analyseert...</p>
             </div>
 
             <div class="analysis-block" style="border-left: 4px solid #9b59b6;">
                 <h3>📋 Paard & Ruiter Checklist Scans</h3>
-                <p id="checklistText">Gegevens over stabiliteit en lossigheid...</p>
+                <p id="checklistText">Analyseert...</p>
             </div>
 
             <div class="analysis-block" style="border-left: 4px solid var(--primary-green); background: #fdfbf7;">
@@ -243,13 +243,17 @@
                     const base64Data = e.target.result.split(',')[1];
 
                     try {
-                        const response = await fetch('https://dressagecoach.onrender.com/analyze', {
+                        // We roepen nu de lokale Vercel API-route aan in plaats van Render!
+                        const response = await fetch('/api/analyze', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ video: base64Data })
                         });
 
-                        if (!response.ok) throw new Error('De server ondervindt druk of de video is te groot.');
+                        if (!response.ok) {
+                            const errData = await response.json().catch(() => ({}));
+                            throw new Error(errData.error || 'De AI-verwerking op Vercel is mislukt.');
+                        }
 
                         const result = await response.json();
                         renderOutput(result);
@@ -269,13 +273,13 @@
         }
 
         function renderOutput(data) {
-            // Check of de server de nieuwe structuur meestuurt, anders hanteren we een nette fallback
-            document.getElementById('scoreValue').textContent = data.score || "7.0";
-            document.getElementById('visueleCheckText').textContent = data.visuele_check || "Visuele scan voltooid.";
-            document.getElementById('bewegingText').textContent = data.beweging_analyse || "Paard toont actieve beweging over de rug.";
-            document.getElementById('neusText').textContent = data.neus_loodlijn_check || "Neuspositie geëvalueerd in relatie tot de halslengte.";
-            document.getElementById('checklistText').textContent = data.checklist_paard_ruiter || "Checklist gescand. Symmetrie en balans zijn stabiel.";
-            document.getElementById('adviesText').textContent = data.trainingsadvies || "Blijf rijden van achteren naar voren met een ontvangende hand.";
+            // Dit vult de velden exact met de JSON-data die vanuit Vercel terugkomt
+            document.getElementById('scoreValue').textContent = data.score;
+            document.getElementById('visueleCheckText').textContent = data.visuele_check;
+            document.getElementById('bewegingText').textContent = data.beweging_analyse;
+            document.getElementById('neusText').textContent = data.neus_loodlijn_check;
+            document.getElementById('checklistText').textContent = data.checklist_paard_ruiter;
+            document.getElementById('adviesText').textContent = data.trainingsadvies;
 
             resultsSection.classList.add('show');
             window.scrollTo({ top: resultsSection.offsetTop - 30, behavior: 'smooth' });
