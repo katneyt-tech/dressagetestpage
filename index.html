@@ -3,316 +3,369 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fair Dressage Analyzer - Klassieke Biomechanica Check</title>
+    <title>Fair Dressage Analyzer</title>
     <style>
-        :root {
-            --primary-green: #0b2518;
-            --accent-gold: #c5a059;
-            --bg-light: #f7f9f8;
-            --card-white: #ffffff;
-            --text-main: #2c3531;
-            --text-muted: #626e68;
-            --border-color: #e1e6e3;
+        /* Reset & Basis styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-light);
-            color: var(--text-main);
+            background-color: #f5f7f6;
+            color: #333;
             line-height: 1.6;
+            padding-bottom: 60px;
         }
 
-        header {
-            background: linear-gradient(135deg, var(--primary-green) 0%, #153d29 100%);
+        /* Kopbalk */
+        .header-banner {
+            background-color: #0b3022;
             color: white;
-            padding: 50px 20px;
             text-align: center;
-            border-bottom: 4px solid var(--accent-gold);
+            padding: 40px 20px;
+            border-bottom: 4px solid #c5a059;
         }
 
-        header h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
-        header p { font-size: 15px; opacity: 0.9; font-style: italic; }
-        .container { max-width: 780px; margin: 0 auto; padding: 30px 20px; }
+        .header-banner h1 {
+            font-size: 22pt;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
 
-        .section {
-            background: var(--card-white);
+        .header-banner p {
+            font-size: 11pt;
+            color: #a3c2b5;
+            font-style: italic;
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* Blokken / Cards */
+        .card {
+            background: white;
             border-radius: 12px;
-            padding: 35px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 20px rgba(11, 37, 24, 0.04);
-            border: 1px solid var(--border-color);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
         }
 
-        .section h2 {
-            font-size: 22px;
-            margin-bottom: 18px;
-            color: var(--primary-green);
-            padding-bottom: 8px;
-            border-bottom: 2px solid #f4f6f5;
+        .card h2 {
+            font-size: 14pt;
+            color: #0b3022;
+            margin-bottom: 16px;
+            font-weight: 600;
         }
 
-        .philosophy-box {
-            background: #fdfbf7;
-            border-left: 4px solid var(--accent-gold);
-            padding: 18px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            font-size: 14px;
+        /* Richtlijn box van Rien */
+        .guideline-box {
+            background-color: #fdfaf4;
+            border-left: 4px solid #c5a059;
+            padding: 16px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 10px;
         }
 
-        /* Upload Area */
+        .guideline-box strong {
+            color: #8c6d31;
+            display: block;
+            margin-bottom: 6px;
+            font-size: 10.5pt;
+        }
+
+        .guideline-box p {
+            font-size: 10pt;
+            color: #4a5568;
+        }
+
+        /* Upload Zone */
         .upload-area {
-            border: 2px dashed #b3c2ba;
-            border-radius: 10px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
             padding: 40px 20px;
             text-align: center;
             cursor: pointer;
-            background: #fafbfa;
-            transition: all 0.2s;
-            margin-bottom: 25px;
+            background-color: #fafbfa;
+            transition: all 0.2s ease;
         }
-        .upload-area:hover { border-color: var(--accent-gold); background: #fdfbf7; }
-        .upload-area input { display: none; }
 
-        .video-preview-wrapper {
-            display: none; width: 100%; background: #000; border-radius: 8px;
-            overflow: hidden; margin-bottom: 25px;
+        .upload-area:hover {
+            border-color: #0b3022;
+            background-color: #f0f4f2;
         }
-        video { width: 100%; max-height: 450px; display: block; object-fit: contain; }
 
-        .file-badge { background: #e8f4ee; border: 1px solid #a3cfbb; color: #146c43; padding: 10px; border-radius: 6px; margin-bottom: 20px; font-size: 13.5px; text-align: center; }
-        .error-message { background: #fff3cd; border: 1px solid #ffecb5; color: #664d03; padding: 14px; border-radius: 6px; margin-bottom: 20px; display: none; }
-
-        /* Buttons */
-        .btn { padding: 15px 30px; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: 0.5px; }
-        .btn-primary { background: var(--primary-green); color: white; }
-        .btn-primary:disabled { background: #ced6d2; color: #718076; cursor: not-allowed; }
-        .btn-secondary { background: transparent; color: var(--primary-green); border: 2px solid var(--primary-green); margin-top: 20px; }
-
-        /* Loader */
-        .loading-box { display: none; text-align: center; padding: 30px 10px; }
-        .loading-box.show { display: block; }
-        .spinner { border: 3px solid #e2e8e5; border-top: 3px solid var(--accent-gold); border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Results Display */
-        .results-container { display: none; }
-        .results-container.show { display: block; }
-        
-        .score-hero {
-            background: linear-gradient(135deg, var(--primary-green) 0%, #153d29 100%);
-            color: white; border-radius: 10px; padding: 25px; text-align: center; margin-bottom: 25px; border-bottom: 4px solid var(--accent-gold);
+        .upload-area p.main-text {
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 4px;
         }
-        .score-number { font-size: 55px; font-weight: 800; color: var(--accent-gold); line-height: 1; }
-        
-        .analysis-block {
-            background: #fafbfa; border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; margin-bottom: 15px;
-        }
-        .analysis-block h3 { font-size: 15px; color: var(--primary-green); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-        .analysis-block p { font-size: 14px; color: var(--text-main); white-space: pre-line; }
 
-        .cta-box { background: linear-gradient(135deg, var(--primary-green) 0%, #153d29 100%); color: white; border-radius: 10px; padding: 35px 20px; text-align: center; margin-top: 40px; border-bottom: 4px solid var(--accent-gold); }
-        .btn-cta { background: var(--accent-gold); color: var(--primary-green); display: inline-block; text-decoration: none; padding: 14px 30px; border-radius: 6px; font-weight: 700; font-size: 14px; text-transform: uppercase; margin-top: 15px; }
+        .upload-area p.sub-text {
+            font-size: 9.5pt;
+            color: #64748b;
+        }
+
+        #videoInput {
+            display: none;
+        }
+
+        .file-info {
+            margin-top: 15px;
+            font-size: 10pt;
+            color: #0b3022;
+            font-weight: 600;
+            display: none;
+        }
+
+        /* Knoppen */
+        .btn {
+            display: block;
+            width: 100%;
+            background-color: #0b3022;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 11pt;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #072218;
+        }
+
+        .btn:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        /* Wacht-animatie (Spinner) */
+        .loading-container {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0,0,0,0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #0b3022;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Resultaten Rapport */
+        .results-section {
+            display: none;
+        }
+
+        .results-header {
+            font-size: 14pt;
+            color: #0b3022;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Het Groene Cijfer-vlak */
+        .score-card {
+            background-color: #0b3022;
+            color: white;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 24px;
+            border-bottom: 4px solid #c5a059;
+        }
+
+        .score-number {
+            font-size: 46pt;
+            font-weight: 700;
+            color: #c5a059;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .score-label {
+            font-size: 9pt;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #e2e8f0;
+        }
+
+        /* AI Tekst Observatie */
+        .observation-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .observation-title {
+            font-weight: 600;
+            font-size: 11pt;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .observation-text {
+            font-size: 10.5pt;
+            color: #334155;
+            white-space: pre-line;
+        }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>🐴 Fair Dressage Analyzer</h1>
+    <div class="header-banner">
+        <h1>Fair Dressage Analyzer</h1>
         <p>Gedreven door de klassieke trainingsleer en de cirkel van energie</p>
-    </header>
+    </div>
 
     <div class="container">
         
-        <div class="section">
-            <h2>📖 Onze Visie: Het Hele Paardenlichaam</h2>
-            <div class="philosophy-box">
-                <strong>Rien van der Schaft Richtlijn:</strong><br>
-                "Rijd het paardenlichaam naar het hoofd toe. Dat betekent dat je de hals nooit korter mag maken!" De hoofd-halshouding is het *gevolg* van balans en correct ruggebruik, nooit van handmatige dwang van voren. Deze AI kijkt verder dan een starre loodlijn; we analyseren of je paard écht door het lijf loopt.
+        <div class="card">
+            <h2>Onze Visie: Het Hele Paardenlichaam</h2>
+            <div class="guideline-box">
+                <strong>Rien van der Schaft Richtlijn:</strong>
+                <p>"Rijd het paardenlichaam naar het hoofd toe. Dat betekent dat je de hals nooit korter mag maken! De hoofd-halshouding is het *gevolg* van balans en correct ruggebruik, nooit van handmatige dwang van voren. Deze AI kijkt verder dan een starre loodlijn; we analyseren of je paard écht door het lijf loopt."</p>
             </div>
         </div>
 
-        <div class="section">
-            <h2>📹 Video Uploaden voor Analyse</h2>
+        <div class="card">
+            <h2>Video Uploaden voor Analyse</h2>
             <div class="upload-area" id="dropZone" onclick="document.getElementById('videoInput').click()">
-                <span style="font-size: 36px; display:block; margin-bottom:10px;">📤</span>
-                <div style="font-weight: 600; color: var(--primary-green);">Selecteer dressuurvideo</div>
-                <div style="font-size: 12px; color: var(--text-muted);">Sleep het bestand hiernaartoe (MP4, MOV)</div>
-                <input type="file" id="videoInput" accept="video/*">
+                <p class="main-text">Selecteer dressuurvideo</p>
+                <p class="sub-text">Sleep het bestand hiernaartoe (MP4, MOV)</p>
+                <div class="file-info" id="fileInfo"></div>
             </div>
-
-            <div class="video-preview-wrapper" id="videoWrapper">
-                <video id="previewPlayer" controls playsinline></video>
-            </div>
-
-            <div id="fileBadge" class="file-badge" style="display: none;"></div>
-            <div id="errorBox" class="error-message"></div>
-
-            <button class="btn btn-primary" id="startBtn" onclick="processVideo()" disabled>
-                🚀 Start Klassieke Biomechanica Analyse
-            </button>
-
-            <div id="loadingBox" class="loading-box">
-                <div class="spinner"></div>
-                <p style="font-weight: 700; color: var(--primary-green);">De AI evalueert de beweging en de aanleuning...</p>
-                <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">We berekenen de activiteit, het ruggebruik en de natuurlijke loodlijn. Dit duurt maximaal 30 seconden.</p>
-            </div>
-        </div>
-
-        <div class="section results-container" id="resultsSection">
-            <h2>📊 Klassiek Analyse Rapport</h2>
+            <input type="file" id="videoInput" accept="video/mp4,video/quicktime">
             
-            <div class="score-hero">
-                <div class="score-number" id="scoreValue">0.0</div>
-                <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9;">Algemene Biomechanische Score (0-10)</div>
-            </div>
-
-            <div class="analysis-block" style="border-left: 4px solid #4a90e2;">
-                <h3>👁️ Visuele AI Observatie</h3>
-                <p id="visueleCheckText">Analyseert...</p>
-            </div>
-
-            <div class="analysis-block" style="border-left: 4px solid #2ecc71;">
-                <h3>🔄 Cirkel van Energie & Ruggebruik</h3>
-                <p id="bewegingText">Analyseert...</p>
-            </div>
-
-            <div class="analysis-block" style="border-left: 4px solid var(--accent-gold);">
-                <h3>🎯 Aanleuning & Neus-Loodlijn Evaluatie</h3>
-                <p id="neusText">Analyseert...</p>
-            </div>
-
-            <div class="analysis-block" style="border-left: 4px solid #9b59b6;">
-                <h3>📋 Paard & Ruiter Checklist Scans</h3>
-                <p id="checklistText">Analyseert...</p>
-            </div>
-
-            <div class="analysis-block" style="border-left: 4px solid var(--primary-green); background: #fdfbf7;">
-                <h3>💡 Gericht Advies (Van der Schaft Methode)</h3>
-                <p id="adviesText" style="font-style: italic;"></p>
-            </div>
-
-            <button class="btn btn-secondary" onclick="clearForm()">← Analyseer een andere video</button>
+            <button class="btn" id="analyzeBtn" disabled>Analyseer Video</button>
         </div>
 
-        <div class="cta-box">
-            <h3>Help mee Fair Dressage vorm te geven! 🚀</h3>
-            <p>Laat ons in de vragenlijst weten of de AI-beoordeling klopt met jouw ruitersgevoel.</p>
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLScFzfVP-on2ae3MDhu4rXYa2qdDiYY3ZCBImEblFwRPEcaleQ/viewform?usp=sharing" target="_blank" class="btn-cta">
-                📝 Vul de 3-minuten vragenlijst in
-            </a>
+        <div class="loading-container" id="loadingState">
+            <div class="spinner"></div>
+            <p style="font-size: 10.5pt; color: #475569; font-weight: 500;">Visuele scan bezig...</p>
+            <p style="font-size: 9pt; color: #94a3b8; margin-top: 2px;">De AI analyseert de biomechanica van je paard. Dit kan tot een minuut duren.</p>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="results-header">
+                📊 Klassiek Analyse Rapport
+            </div>
+            
+            <div class="score-card">
+                <div class="score-number" id="scoreDisplay">-.-</div>
+                <div class="score-label">ALGEMENE BIOMECHANISCHE SCORE (0-10)</div>
+            </div>
+
+            <div class="observation-card">
+                <div class="observation-title">
+                    👁️ Visuele AI Observatie
+                </div>
+                <div class="observation-text" id="analysisText">
+                    Visuele scan voltooid.
+                </div>
+            </div>
         </div>
 
     </div>
 
     <script>
+        const dropZone = document.getElementById('dropZone');
         const videoInput = document.getElementById('videoInput');
-        const startBtn = document.getElementById('startBtn');
-        const fileBadge = document.getElementById('fileBadge');
-        const errorBox = document.getElementById('errorBox');
-        const loadingBox = document.getElementById('loadingBox');
+        const fileInfo = document.getElementById('fileInfo');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loadingState = document.getElementById('loadingState');
         const resultsSection = document.getElementById('resultsSection');
-        const videoWrapper = document.getElementById('videoWrapper');
-        const previewPlayer = document.getElementById('previewPlayer');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const analysisText = document.getElementById('analysisText');
 
-        videoInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                startBtn.disabled = false;
-                fileBadge.textContent = '✓ Geselecteerd: ' + file.name;
-                fileBadge.style.display = 'block';
-                errorBox.style.display = 'none';
-                previewPlayer.src = URL.createObjectURL(file);
-                videoWrapper.style.display = 'block';
-            }
+        let selectedFile = null;
+
+        // Drag & Drop acties
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#0b3022';
+            dropZone.style.backgroundColor = '#f0f4f2';
         });
 
-        async function processVideo() {
-            const file = videoInput.files[0];
-            if (!file) return;
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = '#cbd5e1';
+            dropZone.style.backgroundColor = '#fafbfa';
+        });
 
-            loadingBox.classList.add('show');
-            resultsSection.classList.remove('show');
-            errorBox.style.display = 'none';
-            startBtn.disabled = true;
-
-            try {
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    const base64Data = e.target.result.split(',')[1];
-
-                    try {
-                        // We roepen nu de lokale Vercel API-route aan in plaats van Render!
-                        const response = await fetch('/api/analyze', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ video: base64Data })
-                        });
-
-                        if (!response.ok) {
-                            const errData = await response.json().catch(() => ({}));
-                            throw new Error(errData.error || 'De AI-verwerking op Vercel is mislukt.');
-                        }
-
-                        const result = await response.json();
-                        renderOutput(result);
-                    } catch (err) {
-                        displayError('Fout bij AI-verbinding: ' + err.message);
-                    } finally {
-                        loadingBox.classList.remove('show');
-                        startBtn.disabled = false;
-                    }
-                };
-                reader.readAsDataURL(file);
-            } catch (err) {
-                displayError('Verwerkingsfout: ' + err.message);
-                loadingBox.classList.remove('show');
-                startBtn.disabled = false;
-            }
-        }
-
-        function renderOutput(data) {
-            // Dit vult de velden exact met de JSON-data die vanuit Vercel terugkomt
-            document.getElementById('scoreValue').textContent = data.score;
-            document.getElementById('visueleCheckText').textContent = data.visuele_check;
-            document.getElementById('bewegingText').textContent = data.beweging_analyse;
-            document.getElementById('neusText').textContent = data.neus_loodlijn_check;
-            document.getElementById('checklistText').textContent = data.checklist_paard_ruiter;
-            document.getElementById('adviesText').textContent = data.trainingsadvies;
-
-            resultsSection.classList.add('show');
-            window.scrollTo({ top: resultsSection.offsetTop - 30, behavior: 'smooth' });
-        }
-
-        function displayError(msg) {
-            errorBox.textContent = '⚠️ ' + msg;
-            errorBox.style.display = 'block';
-        }
-
-        function clearForm() {
-            videoInput.value = '';
-            previewPlayer.src = '';
-            videoWrapper.style.display = 'none';
-            startBtn.disabled = true;
-            fileBadge.style.display = 'none';
-            resultsSection.classList.remove('show');
-            errorBox.style.display = 'none';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Drag & Drop
-        const dropZone = document.getElementById('dropZone');
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = 'var(--accent-gold)'; });
-        dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#b3c2ba'; });
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
-            dropZone.style.borderColor = '#b3c2ba';
+            dropZone.style.borderColor = '#cbd5e1';
+            dropZone.style.backgroundColor = '#fafbfa';
             if (e.dataTransfer.files.length > 0) {
-                videoInput.files = e.dataTransfer.files;
-                videoInput.dispatchEvent(new Event('change'));
+                handleFile(e.dataTransfer.files[0]);
             }
         });
-    </script>
-</body>
-</html>
+
+        videoInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (file.type.startsWith('video/')) {
+                selectedFile = file;
+                fileInfo.textContent = `Geselecteerd: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB)`;
+                fileInfo.style.display = 'block';
+                analyzeBtn.disabled = false;
+                resultsSection.style.display = 'none';
+            } else {
+                alert('Selecteer aub een echt videobestand (zoals MP4 of MOV).');
+            }
+        }
+
+        // De knop-actie die de video verstuurt
+        analyzeBtn.addEventListener('click', () => {
+            if (!selectedFile) return;
+
+            // Interface klaarmaken voor laden
+            analyzeBtn.disabled = true;
+            loadingState.style.display = 'block';
+            resultsSection.style.display = 'none';
+
+            const reader = new FileReader();
+            reader.readAsDataURL(selectedFile);
+
+            reader.onloadend = async () => {
+                // Haal de pure Base64 code op (achter de komma)
+                const pureBase64 = reader.result.split(',')[1];
+
+                try {
+                    // Stuur het verzoek naar de Vercel api/analyze server
+                    const response = await fetch('/api/analyze', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body:
