@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fair Dressage Analyzer - Biomechanische Loodlijn Check</title>
+    <style>
+        :root {
+            --primary-green: #0b2518;
+            --accent-gold: #c5a059;
+            --bg-light: #f7f9f8;
+            --card-white: #ffffff;
+            --text-main: #2c3531;
+            --text-muted: #626e68;
+            --border-color: #e1e6e3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-green) 0%, #153d29 100%);
+            color: white;
+            padding: 50px 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--accent-gold);
+        }
+
+        header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 15px;
+            opacity: 0.9;
+            font-style: italic;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .section {
+            background: var(--card-white);
+            border-radius: 12px;
+            padding: 35px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(11, 37, 24, 0.04);
+            border: 1px solid var(--border-color);
+        }
+
+        .section h2 {
+            font-size: 22px;
+            margin-bottom: 18px;
+            color: var(--primary-green);
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f4f6f5;
+        }
+
+        .info-box {
+            background: #fdfbf7;
+            border-left: 4px solid var(--accent-gold);
+            padding: 18px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .info-box strong {
+            color: var(--primary-green);
+            display: block;
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        .info-box p {
+            font-size: 14px;
+            color: #4a5550;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed #b3c2ba;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #fafbfa;
+            transition: all 0.2s ease;
+            margin-bottom: 25px;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-gold);
+            background: #fdfbf7;
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Live Video Preview Box */
+        .video-preview-wrapper {
+            display: none;
+            width: 100%;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        video {
+            width: 100%;
+            max-height: 450px;
+            display: block;
+            object-fit: contain;
+        }
+
+        .file-badge {
+            background: #e8f4ee;
+            border: 1px solid #a3cfbb;
+            color: #146c43;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13.5px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .error-message {
+            background: #fff3cd;
+            border: 1px solid #ffecb5;
+            color: #664d03;
+            padding: 14px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13.5px;
+            display: none;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary-green);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #153d29;
+            box-shadow: 0 4px 12px rgba(11, 37, 24, 0.15);
+        }
+
+        .btn-primary:disabled {
+            background: #ced6d2;
+            color: #718076;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-green);
+            border: 2px solid var(--primary-green);
+            margin-top: 20px;
+        }
+
+        /* Loader */
+        .loading-box {
+            display: none;
+            text-align: center;
+            padding: 30px 10px;
+        }
+
+        .loading-box.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #e2e8e5;
+            border-top: 3px solid var(--accent-gold);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Results Layout */
+        .results-container {
+            display: none;
+        }
+
+        .results-container.show {
+            display: block;
+        }
+
+        .score-hero {
+            background: linear-gradient(135deg, var(--primary-green) 0%, #153d29 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 4px solid var(--accent-gold);
+        }
+
+        .score-number {
+            font-size: 60px;
+            font-weight: 800;
+            color: var(--accent-gold);
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .score-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        .interpretation-text {
+            font-size: 15px;
+            line-height: 1.6;
+            background: #fafbfa;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .warning-card {
+            background: #fffbf0;
+            border: 1px solid #ffeeba;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #554108;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tips-wrapper {
+            background: #fafbfa;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        /* CTA Box */
+        .cta-box {
+            background: linear-gradient(135deg, var(--primary-green) 0%, #153d29 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 35px 20px;
+            text-align: center;
+            margin-top: 40px;
+            border-bottom: 4px solid var(--accent-gold);
+        }
+
+        .cta-box h3 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .cta-box p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .btn-cta {
+            background: var(--accent-gold);
+            color: var(--primary-green);
+            display: inline-block;
+            text-decoration: none;
+            padding: 14px 30px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+
+        .btn-cta:hover {
+            background: #dbb76c;
+        }
+
+        @media (max-width: 600px) {
+            .section { padding: 20px; }
+            header h1 { font-size: 26px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🐴 Fair Dressage Analyzer</h1>
+        <p>Objectieve video-analyse gebaseerd op de klassieke trainingsschaal</p>
+    </header>
+
+    <div class="container">
+        
+        <!-- Wetenschappelijke / Professionele Toelichting -->
+        <div class="section">
+            <h2>📖 Wat doet de Analyzer?</h2>
+            <div class="info-box">
+                <strong>🎯 Evaluatie van de Loodlijn & Aanleuning</strong>
+                <p>Binnen de correcte biomechanica hoort het neusbeen van het paard zich tijdens de beweging loodrecht (op de verticale loodlijn) of heel lichtjes vóór de loodlijn te bevinden. De nek vormt hierbij het hoogste punt met een open, ontspannen keelgang. Dit toont aan dat het paard eerlijke verbinding zoekt vanuit een actief dragend achterbeen.</p>
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted);">
+                <strong>Klassieke Basis:</strong> Onze systemen evalueren video's op basis van de fundamentele wetten van de trainingsschaal (Ritme, Losgelatenheid en Aanleuning). FEI-regelgerecht en met het welzijn van het paard voorop.
+            </p>
+        </div>
+
+        <!-- Het Upload & Video Panel -->
+        <div class="section">
+            <h2>📹 Test je eigen video</h2>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">
+                Upload een korte clip (aanbevolen: 10 tot 40 seconden draf of galop op de hoefslag vanaf de zijkant gefilmd).
+            </p>
+            
+            <div class="upload-area" id="dropZone" onclick="document.getElementById('videoInput').click()">
+                <span class="upload-icon">📤</span>
+                <div style="font-weight: 600; color: var(--primary-green);">Selecteer dressuurvideo</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">of sleep het bestand hiernaartoe (MP4, MOV)</div>
+                <input type="file" id="videoInput" accept="video/*">
+            </div>
+
+            <!-- DE CRUCIALE VIDEO PLAYER (Nu volledig zichtbaar na selectie!) -->
+            <div class="video-preview-wrapper" id="videoWrapper">
+                <video id="previewPlayer" controls playsinline></video>
+            </div>
+
+            <div id="fileBadge" class="file-badge" style="display: none;"></div>
+            <div id="errorBox" class="error-message"></div>
+
+            <button class="btn btn-primary" id="startBtn" onclick="processVideo()" disabled>
+                🚀 Start Computer Vision Analyse
+            </button>
+
+            <!-- Loading UI -->
+            <div id="loadingBox" class="loading-box">
+                <div class="spinner"></div>
+                <p style="font-weight: 700; color: var(--primary-green);">De AI analyseert de biomechanica...</p>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Frame-voor-frame controle op de loodlijn en aanleuning duurt maximaal 30 seconden.</p>
+            </div>
+        </div>
+
+        <!-- Dynamisch Dashboard met Resultaten -->
+        <div class="section results-container" id="resultsSection">
+            <h2>📊 Analyse Rapport</h2>
+            
+            <div class="score-hero">
+                <div class="score-number" id="scoreValue">0.0</div>
+                <div class="score-label">Loodlijn Score (0-10)</div>
+            </div>
+
+            <div class="interpretation-text" id="interpretationBox"></div>
+
+            <h3 style="font-size: 15px; color: var(--primary-green); margin-bottom: 10px;">📌 Waargenomen meetpunten:</h3>
+            <div id="warningsList"></div>
+
+            <h3 style="font-size: 15px; color: var(--primary-green); margin-top: 25px; margin-bottom: 10px;">🏋️ Gericht trainingsadvies:</h3>
+            <div class="tips-wrapper" id="tipsBox"></div>
+
+            <button class="btn btn-secondary" onclick="clearForm()">← Analyseer nog een video</button>
+        </div>
+
+        <!-- De Feedback-lus (Verzamelt reacties voor je app-ontwikkeling) -->
+        <div class="cta-box">
+            <h3>Bouw mee aan de toekomst van Fair Dressage! 🚀</h3>
+            <p>Jouw unieke ervaring als tester bepaalt welke functies we toevoegen aan het definitieve platform.</p>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLScFzfVP-on2ae3MDhu4rXYa2qdDiYY3ZCBImEblFwRPEcaleQ/viewform?usp=sharing" target="_blank" class="btn-cta">
+                📝 Vul de 3-minuten vragenlijst in
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        const videoInput = document.getElementById('videoInput');
+        const startBtn = document.getElementById('startBtn');
+        const fileBadge = document.getElementById('fileBadge');
+        const errorBox = document.getElementById('errorBox');
+        const loadingBox = document.getElementById('loadingBox');
+        const resultsSection = document.getElementById('resultsSection');
+        const videoWrapper = document.getElementById('videoWrapper');
+        const previewPlayer = document.getElementById('previewPlayer');
+
+        // Event: Bestand geselecteerd
+        videoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                startBtn.disabled = false;
+                fileBadge.textContent = '✓ Geselecteerd bestand: ' + file.name;
+                fileBadge.style.display = 'block';
+                errorBox.style.display = 'none';
+
+                // MAAK DE VIDEO DIRECT ZICHTBAAR VOOR DE RUITER
+                const blobUrl = URL.createObjectURL(file);
+                previewPlayer.src = blobUrl;
+                videoWrapper.style.display = 'block';
+            }
+        });
+
+        // API Request naar de Render-Server
+        async function processVideo() {
+            const file = videoInput.files[0];
+            if (!file) return;
+
+            loadingBox.classList.add('show');
+            resultsSection.classList.remove('show');
+            errorBox.style.display = 'none';
+            startBtn.disabled = true;
+
+            try {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const base64Data = e.target.result.split(',')[1];
+
+                    try {
+                        const response = await fetch('https://dressagecoach.onrender.com/analyze', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ video: base64Data })
+                        });
+
+                        if (!response.ok) throw new Error('De server is momenteel overbezet. Probeer een kortere video.');
+
+                        const resultData = await response.json();
+                        renderOutput(resultData);
+                    } catch (err) {
+                        displayError('Verbindingsfout met AI-server: ' + err.message);
+                    } finally {
+                        loadingBox.classList.remove('show');
+                        startBtn.disabled = false;
+                    }
+                };
+                reader.readAsDataURL(file);
+            } catch (err) {
+                displayError('Bestandsverwerkingsfout: ' + err.message);
+                loadingBox.classList.remove('show');
+                startBtn.disabled = false;
+            }
+        }
+
+        // Dynamische en professionele weergave van de AI-data
+        function renderOutput(data) {
+            document.getElementById('scoreValue').textContent = data.score;
+            
+            let interpretation = '';
+            let trainingTips = '';
+
+            if (data.score >= 7.5) {
+                interpretation = '<strong>Prachtig en biomechanisch correct verloop!</strong> Het paard handhaaft stabiel de neuslijn op of net voor de loodlijn met de nek als hoogste punt. Dit toont een eerlijke, lichte aanleuning aan waarbij het paard over de rug naar de hand toe stretcht.';
+                trainingTips = 'Behoud deze fijne balans. Focus in de verdere training op tempowisselingen binnen de gangen (schakelen) om de achterhand nóg actiever te leren dragen, zonder dat de halslengte korter wordt.';
+            } else {
+                interpretation = '<strong>Aandachtspunt gedetecteerd in de bovenlijn.</strong> Er zijn significante momenten gemeten waarop de neuslijn achter de verticale loodlijn zakt (valse knik). Hierdoor sluit de keelgang, kan de lange rugspier blokkeren en verliest het achterbeen zijn dragende functie.';
+                trainingTips = 'Rijd het paard resoluut van achteren uit méér naar de hand toe met een elastische, meegaande hand. Nodig het paard uit om de hals naar voren-down te strekken (remidial training) om het eerlijke contact te herstellen.';
+            }
+
+            document.getElementById('interpretationBox').innerHTML = interpretation;
+            document.getElementById('tipsBox').innerHTML = trainingTips;
+
+            const warningsList = document.getElementById('warningsList');
+            if (data.warnings && data.warnings.length > 0) {
+                warningsList.innerHTML = data.warnings.map(w => `<div class="warning-card">⚠️ ${w}</div>`).join('');
+            } else {
+                warningsList.innerHTML = '<div class="warning-card" style="background:#e8f4ee; border-color:#a3cfbb; color:#146c43;">✓ Geen acute biomechanische afwijkingen of conflictgedrag waargenomen tijdens deze frames.</div>';
+            }
+
+            resultsSection.classList.add('show');
+            window.scrollTo({ top: resultsSection.offsetTop - 30, behavior: 'smooth' });
+        }
+
+        function displayError(msg) {
+            errorBox.textContent = '⚠️ ' + msg;
+            errorBox.style.display = 'block';
+        }
+
+        function clearForm() {
+            videoInput.value = '';
+            previewPlayer.src = '';
+            videoWrapper.style.display = 'none';
+            startBtn.disabled = true;
+            fileBadge.style.display = 'none';
+            resultsSection.classList.remove('show');
+            errorBox.style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Drag and Drop functionaliteit
+        const dropZone = document.getElementById('dropZone');
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = 'var(--accent-gold)'; });
+        dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#b3c2ba'; });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#b3c2ba';
+            if (e.dataTransfer.files.length > 0) {
+                videoInput.files = e.dataTransfer.files;
+                videoInput.dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
+</body>
+</html>
