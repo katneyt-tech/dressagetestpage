@@ -74,7 +74,6 @@
             margin-bottom: 6px;
         }
 
-        /* API Key Setup Styling */
         .key-input-container {
             display: flex;
             gap: 10px;
@@ -137,6 +136,17 @@
             background: #f0f4f2;
             padding: 8px;
             border-radius: 6px;
+        }
+
+        /* NIEUW: Videospeler styling */
+        .video-preview-player {
+            display: none;
+            width: 100%;
+            max-height: 400px;
+            margin-top: 15px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: #000;
         }
 
         .btn {
@@ -229,7 +239,7 @@
 
     <div class="container">
         
-        <!-- API Instellingen (Veilig lokaal) -->
+        <!-- API Instellingen -->
         <div class="card">
             <h2>1. Koppel jouw Google AI Studio Sleutel</h2>
             <p style="font-size: 10pt; color: #64748b; margin-bottom: 8px;">Plak hier eenmalig je sleutel (begint met AQ.). Deze wordt uitsluitend veilig op jouw eigen computer bewaard.</p>
@@ -240,7 +250,7 @@
             <div id="keyStatus" class="status-badge status-missing">Geen API-sleutel actief</div>
         </div>
 
-        <!-- Onze Visie Sectie -->
+        <!-- Onze Visie -->
         <div class="card">
             <h2>Onze Visie: Het Hele Paardenlichaam</h2>
             <div class="guideline-box">
@@ -249,7 +259,7 @@
             </div>
         </div>
 
-        <!-- Video Upload Sectie -->
+        <!-- Video Upload & Preview -->
         <div class="card">
             <h2>2. Video Uploaden voor Analyse</h2>
             <div class="upload-area" id="dropZone" onclick="document.getElementById('videoInput').click()">
@@ -259,6 +269,9 @@
             </div>
             <input type="file" id="videoInput">
             
+            <!-- NIEUW: De videospeler die nu écht de video laat zien -->
+            <video id="videoPreview" class="video-preview-player" controls></video>
+            
             <button class="btn" id="analyzeBtn" disabled>Analyseer Video via Gemini 2.0</button>
         </div>
 
@@ -266,7 +279,7 @@
         <div class="loading-container" id="loadingState">
             <div class="spinner"></div>
             <p style="font-size: 10.5pt; color: #475569; font-weight: 500;">Directe verbinding met Google Gemini actief...</p>
-            <p style="font-size: 9pt; color: #94a3b8; margin-top: 2px;">De AI scant nu de biomechanica van je paard. Dit duurt ongeveer 20 tot 45 seconden.</p>
+            <p style="font-size: 9pt; color: #94a3b8; margin-top: 2px;">De AI scant nu de biomechanica. Dit duurt ongeveer 20 tot 45 seconden.</p>
         </div>
 
         <!-- Resultaten -->
@@ -279,14 +292,13 @@
             </div>
 
             <div class="observation-card">
-                <div style="font-weight:600; font-size:11pt; margin-bottom:10px;">👁️ Visuele AI Observatie (Selecteerbare Tekst)</div>
+                <div style="font-weight:600; font-size:11pt; margin-bottom:10px;">👁️ Visuele AI Observatie</div>
                 <div class="observation-text" id="analysisText"></div>
             </div>
         </div>
 
     </div>
 
-    <!-- HIER GEBEURT DE MAGIE: We laden Gemini rechtstreeks in de browser -->
     <script type="module">
         import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai";
 
@@ -296,6 +308,7 @@
         const dropZone = document.getElementById('dropZone');
         const videoInput = document.getElementById('videoInput');
         const fileInfo = document.getElementById('fileInfo');
+        const videoPreview = document.getElementById('videoPreview'); // Nieuw
         const analyzeBtn = document.getElementById('analyzeBtn');
         const loadingState = document.getElementById('loadingState');
         const resultsSection = document.getElementById('resultsSection');
@@ -305,14 +318,12 @@
         let selectedFile = null;
         let savedKey = localStorage.getItem('G_DRESSAGE_KEY') || '';
 
-        // Check opgeslagen sleutel bij laden
         if (savedKey) {
             keyStatus.textContent = "✓ API-sleutel succesvol geladen uit browsergeheugen";
             keyStatus.className = "status-badge status-success";
             apiKeyInput.value = "••••••••••••••••••••••••••••••••";
         }
 
-        // Sleutel opslaan
         saveKeyBtn.addEventListener('click', () => {
             const inputVal = apiKeyInput.value.trim();
             if (inputVal && !inputVal.includes('•••')) {
@@ -324,7 +335,6 @@
             }
         });
 
-        // Bestandsafhandeling
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); });
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
@@ -334,10 +344,17 @@
             if (e.target.files.length > 0) handleFile(e.target.files[0]);
         });
 
+        // NIEUW: Zorgt dat de video direct afspeelt op de pagina
         function handleFile(file) {
             selectedFile = file;
             fileInfo.textContent = `Geselecteerd: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB)`;
             fileInfo.style.display = 'block';
+            
+            // Genereer een tijdelijke link naar de video voor de speler
+            const videoURL = URL.createObjectURL(file);
+            videoPreview.src = videoURL;
+            videoPreview.style.display = 'block';
+            
             resultsSection.style.display = 'none';
             checkReady();
         }
@@ -350,7 +367,6 @@
             }
         }
 
-        // Directe verzending van Browser naar Google Gemini
         analyzeBtn.addEventListener('click', () => {
             if (!selectedFile || !savedKey) return;
 
@@ -365,7 +381,6 @@
                 const pureBase64 = reader.result.split(',')[1];
 
                 try {
-                    // We praten RECHTSTREEKS met de officiële Google SDK vanuit de browser
                     const genAI = new GoogleGenerativeAI(savedKey);
                     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
@@ -376,11 +391,14 @@
                         },
                     };
 
+                    // GEWIJZIGD: Verbeterde prompt die dwingt om eerst het paard/de oefening te omschrijven
                     const prompt = `
-                        Analyseer deze dressuurvideo nauwkeurig op basis van de klassieke trainingsleer en de visie van Rien van der Schaft.
+                        Je bent een expert in de klassieke dressuursport. Begin je analyse ALTIJD met een aparte introductie genaamd 'Visuele Identificatie'. Omschrijf hierin heel kort wat je visueel waarneemt: wat voor type of ras paard betreft het (indien te zien, bijv. een warmbloed paard) en welke specifieke dressuuroefeningen of gangen (bijv. actieve draf, galop, volte, diagonaal, etc.) er in de video worden getoond.
+
+                        Geef daarna een nauwkeurige analyse op basis van de klassieke trainingsleer en de visie van Rien van der Schaft.
                         Let specifiek op:
                         1. De oprichting en de hals (Loopt het paard niet te kort/geforceerd in de hals? Is de hals het gevolg van de achterhand?).
-                        2. De balans en correct ruggebruik (Is er sprake van handmatige dwang van voren, of kijkt de AI verder dan een starre loodlijn?).
+                        2. De balans en correct ruggebruik (Is er sprake van handmatige dwang van voren, of kijk je verder dan een starre loodlijn?).
                         3. Loopt het paard echt door het lijf en is de cirkel van energie rond?
 
                         Geef je analyse terug in het Nederlands. Wees constructief en eerlijk. 
@@ -396,7 +414,6 @@
                     resultsSection.style.display = 'block';
                     analysisText.textContent = text;
 
-                    // Score uitpluizen uit de tekst
                     let score = "7.0";
                     const scoreMatch = text.match(/Eindscore:\s*([0-9][.,][0-9]|[0-9]+)/i);
                     if (scoreMatch) {
@@ -410,7 +427,13 @@
                     analyzeBtn.disabled = false;
                     resultsSection.style.display = 'block';
                     scoreDisplay.textContent = "ERR";
-                    analysisText.innerHTML = `<span style="color: #dc2626; font-weight: 600;">⚠️ Fout bij directe AI-analyse:</span>\n\n${error.message || error}`;
+                    
+                    // Netjes op het scherm geprint, selecteerbaar en duidelijk
+                    if(error.message && error.message.includes('429')) {
+                        analysisText.innerHTML = `<span style="color: #dc2626; font-weight: 600;">⚠️ Google is overbelast (Quota limiet):</span>\n\nGoogle heeft de video ontvangen, maar weigert hem op de gratis variant omdat er te veel data in één minuut verwerkt wordt. \n\n**Oplossing:** Wacht eventjes 30 seconden tot de teller bij Google gereset is en druk nogmaals op de analyseknop. Probeer eventueel een iets korter fragment (bijvoorbeeld alleen de draf- of galopbeproeving) als hij blijft weigeren.`;
+                    } else {
+                        analysisText.innerHTML = `<span style="color: #dc2626; font-weight: 600;">⚠️ Fout bij directe AI-analyse:</span>\n\n${error.message || error}`;
+                    }
                 }
             };
         });
