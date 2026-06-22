@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fair Dressage Analyzer</title>
     <style>
-        /* Reset & Basis styling */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -20,7 +19,6 @@
             padding-bottom: 60px;
         }
 
-        /* Kopbalk */
         .header-banner {
             background-color: #0b3022;
             color: white;
@@ -33,7 +31,6 @@
             font-size: 22pt;
             font-weight: 700;
             margin-bottom: 8px;
-            letter-spacing: 0.5px;
         }
 
         .header-banner p {
@@ -42,14 +39,12 @@
             font-style: italic;
         }
 
-        /* Container */
         .container {
             max-width: 800px;
             margin: 30px auto;
             padding: 0 20px;
         }
 
-        /* Blokken / Cards */
         .card {
             background: white;
             border-radius: 12px;
@@ -66,28 +61,56 @@
             font-weight: 600;
         }
 
-        /* Richtlijn box van Rien */
         .guideline-box {
             background-color: #fdfaf4;
             border-left: 4px solid #c5a059;
             padding: 16px;
             border-radius: 0 8px 8px 0;
-            margin-top: 10px;
         }
 
         .guideline-box strong {
             color: #8c6d31;
             display: block;
             margin-bottom: 6px;
-            font-size: 10.5pt;
         }
 
-        .guideline-box p {
+        /* API Key Setup Styling */
+        .key-input-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .key-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
             font-size: 10pt;
-            color: #4a5568;
         }
 
-        /* Upload Zone */
+        .btn-save-key {
+            background-color: #c5a059;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 9pt;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .status-success { background: #dcfce7; color: #166534; }
+        .status-missing { background: #fee2e2; color: #991b1b; }
+
         .upload-area {
             border: 2px dashed #cbd5e1;
             border-radius: 8px;
@@ -103,20 +126,7 @@
             background-color: #f0f4f2;
         }
 
-        .upload-area p.main-text {
-            font-weight: 600;
-            color: #334155;
-            margin-bottom: 4px;
-        }
-
-        .upload-area p.sub-text {
-            font-size: 9.5pt;
-            color: #64748b;
-        }
-
-        #videoInput {
-            display: none;
-        }
+        #videoInput { display: none; }
 
         .file-info {
             margin-top: 15px;
@@ -129,7 +139,6 @@
             border-radius: 6px;
         }
 
-        /* Knoppen */
         .btn {
             display: block;
             width: 100%;
@@ -142,11 +151,6 @@
             font-weight: 600;
             cursor: pointer;
             margin-top: 15px;
-            transition: background-color 0.2s;
-        }
-
-        .btn:hover {
-            background-color: #072218;
         }
 
         .btn:disabled {
@@ -154,7 +158,6 @@
             cursor: not-allowed;
         }
 
-        /* Wacht-animatie (Spinner) */
         .loading-container {
             display: none;
             text-align: center;
@@ -176,22 +179,8 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Resultaten Rapport */
-        .results-section {
-            display: none;
-        }
+        .results-section { display: none; }
 
-        .results-header {
-            font-size: 14pt;
-            color: #0b3022;
-            font-weight: 600;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Het Groene Cijfer-vlak */
         .score-card {
             background-color: #0b3022;
             color: white;
@@ -214,23 +203,14 @@
             font-size: 9pt;
             font-weight: 600;
             letter-spacing: 1px;
-            color: #e2e8f0;
         }
 
-        /* AI Tekst Observatie */
         .observation-card {
             background: white;
             border-radius: 12px;
             padding: 20px;
             border: 1px solid #e2e8f0;
             border-left: 4px solid #3b82f6;
-        }
-
-        .observation-title {
-            font-weight: 600;
-            font-size: 11pt;
-            color: #1e293b;
-            margin-bottom: 10px;
         }
 
         .observation-text {
@@ -249,59 +229,70 @@
 
     <div class="container">
         
+        <!-- API Instellingen (Veilig lokaal) -->
+        <div class="card">
+            <h2>1. Koppel jouw Google AI Studio Sleutel</h2>
+            <p style="font-size: 10pt; color: #64748b; margin-bottom: 8px;">Plak hier eenmalig je sleutel (begint met AQ.). Deze wordt uitsluitend veilig op jouw eigen computer bewaard.</p>
+            <div class="key-input-container">
+                <input type="password" id="apiKeyInput" class="key-input" placeholder="Plak je AQ. sleutel hier...">
+                <button class="btn-save-key" id="saveKeyBtn">Sleutel Opslaan</button>
+            </div>
+            <div id="keyStatus" class="status-badge status-missing">Geen API-sleutel actief</div>
+        </div>
+
         <!-- Onze Visie Sectie -->
         <div class="card">
             <h2>Onze Visie: Het Hele Paardenlichaam</h2>
             <div class="guideline-box">
                 <strong>Rien van der Schaft Richtlijn:</strong>
-                <p>"Rijd het paardenlichaam naar het hoofd toe. Dat betekent dat je de hals nooit korter mag maken! De hoofd-halshouding is het *gevolg* van balans en correct ruggebruik, nooit van handmatige dwang van voren. Deze AI kijkt verder dan een starre loodlijn; we analyseren of je paard écht door het lijf loopt."</p>
+                <p>"Rijd het paardenlichaam naar het hoofd toe. Dat betekent dat je de hals nooit korter mag maken! De hoofd-halshouding is het *gevolg* van balans en correct ruggebruik, nooit van handmatige dwang van voren."</p>
             </div>
         </div>
 
         <!-- Video Upload Sectie -->
         <div class="card">
-            <h2>Video Uploaden voor Analyse</h2>
+            <h2>2. Video Uploaden voor Analyse</h2>
             <div class="upload-area" id="dropZone" onclick="document.getElementById('videoInput').click()">
-                <p class="main-text">Selecteer dressuurvideo</p>
-                <p class="sub-text">Sleep het bestand hiernaartoe (MP4, MOV)</p>
+                <p style="font-weight:600; color:#334155;">Selecteer dressuurvideo</p>
+                <p style="font-size:9.5pt; color:#64748b;">Klik hier of sleep een bestand (MP4, MOV)</p>
                 <div class="file-info" id="fileInfo"></div>
             </div>
             <input type="file" id="videoInput">
             
-            <button class="btn" id="analyzeBtn" disabled>Analyseer Video</button>
+            <button class="btn" id="analyzeBtn" disabled>Analyseer Video via Gemini 2.0</button>
         </div>
 
-        <!-- Wacht/Laad Scherm -->
+        <!-- Wacht Scherm -->
         <div class="loading-container" id="loadingState">
             <div class="spinner"></div>
-            <p style="font-size: 10.5pt; color: #475569; font-weight: 500;">Visuele scan bezig...</p>
-            <p style="font-size: 9pt; color: #94a3b8; margin-top: 2px;">De AI analyseert de biomechanica van je paard. Dit kan tot een minuut duren.</p>
+            <p style="font-size: 10.5pt; color: #475569; font-weight: 500;">Directe verbinding met Google Gemini actief...</p>
+            <p style="font-size: 9pt; color: #94a3b8; margin-top: 2px;">De AI scant nu de biomechanica van je paard. Dit duurt ongeveer 20 tot 45 seconden.</p>
         </div>
 
-        <!-- Resultaten Sectie -->
+        <!-- Resultaten -->
         <div class="results-section" id="resultsSection">
-            <div class="results-header">
-                📊 Klassiek Analyse Rapport
-            </div>
+            <h2 style="color:#0b3022; margin-bottom:12px;">📊 Klassiek Analyse Rapport</h2>
             
             <div class="score-card">
                 <div class="score-number" id="scoreDisplay">-.-</div>
-                <div class="score-label">ALGEMENE BIOMECHANISCHE SCORE (0-10)</div>
+                <div class="score-label">ALGEMENE BIOMECHANISCHE SCORE</div>
             </div>
 
             <div class="observation-card">
-                <div class="observation-title">
-                    👁️ Visuele AI Observatie
-                </div>
-                <div class="observation-text" id="analysisText">
-                    Visuele scan voltooid.
-                </div>
+                <div style="font-weight:600; font-size:11pt; margin-bottom:10px;">👁️ Visuele AI Observatie (Selecteerbare Tekst)</div>
+                <div class="observation-text" id="analysisText"></div>
             </div>
         </div>
 
     </div>
 
-    <script>
+    <!-- HIER GEBEURT DE MAGIE: We laden Gemini rechtstreeks in de browser -->
+    <script type="module">
+        import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai";
+
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const saveKeyBtn = document.getElementById('saveKeyBtn');
+        const keyStatus = document.getElementById('keyStatus');
         const dropZone = document.getElementById('dropZone');
         const videoInput = document.getElementById('videoInput');
         const fileInfo = document.getElementById('fileInfo');
@@ -312,53 +303,57 @@
         const analysisText = document.getElementById('analysisText');
 
         let selectedFile = null;
+        let savedKey = localStorage.getItem('G_DRESSAGE_KEY') || '';
 
-        // Drag & Drop acties
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = '#0b3022';
-            dropZone.style.backgroundColor = '#f0f4f2';
+        // Check opgeslagen sleutel bij laden
+        if (savedKey) {
+            keyStatus.textContent = "✓ API-sleutel succesvol geladen uit browsergeheugen";
+            keyStatus.className = "status-badge status-success";
+            apiKeyInput.value = "••••••••••••••••••••••••••••••••";
+        }
+
+        // Sleutel opslaan
+        saveKeyBtn.addEventListener('click', () => {
+            const inputVal = apiKeyInput.value.trim();
+            if (inputVal && !inputVal.includes('•••')) {
+                localStorage.setItem('G_DRESSAGE_KEY', inputVal);
+                savedKey = inputVal;
+                keyStatus.textContent = "✓ API-sleutel succesvol opgeslagen!";
+                keyStatus.className = "status-badge status-success";
+                checkReady();
+            }
         });
 
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.style.borderColor = '#cbd5e1';
-            dropZone.style.backgroundColor = '#fafbfa';
-        });
-
+        // Bestandsafhandeling
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); });
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
-            dropZone.style.borderColor = '#cbd5e1';
-            dropZone.style.backgroundColor = '#fafbfa';
-            if (e.dataTransfer.files.length > 0) {
-                handleFile(e.dataTransfer.files[0]);
-            }
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
         });
-
         videoInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFile(e.target.files[0]);
-            }
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
         });
 
         function handleFile(file) {
-            const fileName = file.name.toLowerCase();
-            // Extra soepele controle: check type óf bestandsextensie
-            if (file.type.startsWith('video/') || fileName.endsWith('.mp4') || fileName.endsWith('.mov') || fileName.endsWith('.qt')) {
-                selectedFile = file;
-                fileInfo.textContent = `Geselecteerd: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB)`;
-                fileInfo.style.display = 'block';
-                analyzeBtn.disabled = false; // Maak de knop klikbaar!
-                resultsSection.style.display = 'none';
+            selectedFile = file;
+            fileInfo.textContent = `Geselecteerd: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB)`;
+            fileInfo.style.display = 'block';
+            resultsSection.style.display = 'none';
+            checkReady();
+        }
+
+        function checkReady() {
+            if (selectedFile && savedKey) {
+                analyzeBtn.disabled = false;
             } else {
-                alert('Selecteer a.u.b. een geldig videobestand (zoals MP4 of MOV).');
+                analyzeBtn.disabled = true;
             }
         }
 
-        // De knop-actie die de video verstuurt
+        // Directe verzending van Browser naar Google Gemini
         analyzeBtn.addEventListener('click', () => {
-            if (!selectedFile) return;
+            if (!selectedFile || !savedKey) return;
 
-            // Interface klaarmaken voor laden
             analyzeBtn.disabled = true;
             loadingState.style.display = 'block';
             resultsSection.style.display = 'none';
@@ -370,49 +365,52 @@
                 const pureBase64 = reader.result.split(',')[1];
 
                 try {
-                    const response = await fetch('/api/analyze', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            videoBase64: pureBase64,
-                            mimeType: selectedFile.type || "video/mp4"
-                        })
-                    });
+                    // We praten RECHTSTREEKS met de officiële Google SDK vanuit de browser
+                    const genAI = new GoogleGenerativeAI(savedKey);
+                    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-                    const result = await response.json();
+                    const videoPart = {
+                        inlineData: {
+                            data: pureBase64,
+                            mimeType: selectedFile.type || "video/mp4"
+                        },
+                    };
+
+                    const prompt = `
+                        Analyseer deze dressuurvideo nauwkeurig op basis van de klassieke trainingsleer en de visie van Rien van der Schaft.
+                        Let specifiek op:
+                        1. De oprichting en de hals (Loopt het paard niet te kort/geforceerd in de hals? Is de hals het gevolg van de achterhand?).
+                        2. De balans en correct ruggebruik (Is er sprake van handmatige dwang van voren, of kijkt de AI verder dan een starre loodlijn?).
+                        3. Loopt het paard echt door het lijf en is de cirkel van energie rond?
+
+                        Geef je analyse terug in het Nederlands. Wees constructief en eerlijk. 
+                        Eindig je analyse ALTIJD met exact deze tekst onderaan: "Eindscore: [vul hier het getal in]". Gebruik een realistisch cijfer tussen 1 en 10 gebaseerd op de getoonde biomechanica.
+                    `;
+
+                    const result = await model.generateContent([prompt, videoPart]);
+                    const response = await result.response;
+                    const text = response.text();
 
                     loadingState.style.display = 'none';
                     analyzeBtn.disabled = false;
+                    resultsSection.style.display = 'block';
+                    analysisText.textContent = text;
 
-                    if (response.ok) {
-                        resultsSection.style.display = 'block';
-                        analysisText.textContent = result.analysis;
-
-                        // Filter het cijfer uit de tekst
-                        let score = "7.0"; 
-                        const scoreMatch = result.analysis.match(/(?:score|cijfer)[:\s]+([0-9][.,][0-9]|[0-9]+)/i);
-                        
-                        if (scoreMatch) {
-                            score = scoreMatch[1].replace(',', '.');
-                        } else {
-                            const numbers = result.analysis.match(/\b([1-9](\.[0-9])?|10)\b/g);
-                            if (numbers && numbers.length > 0) {
-                                score = numbers[numbers.length - 1];
-                            }
-                        }
-                        
-                        scoreDisplay.textContent = score;
-                    } else {
-                        alert("⚠️ Fout bij AI-verbinding: " + (result.error || "Onbekende fout"));
+                    // Score uitpluizen uit de tekst
+                    let score = "7.0";
+                    const scoreMatch = text.match(/Eindscore:\s*([0-9][.,][0-9]|[0-9]+)/i);
+                    if (scoreMatch) {
+                        score = scoreMatch[1].replace(',', '.');
                     }
+                    scoreDisplay.textContent = score;
 
                 } catch (error) {
-                    console.error("Verzendfout:", error);
+                    console.error(error);
                     loadingState.style.display = 'none';
                     analyzeBtn.disabled = false;
-                    alert("Er ging iets mis tijdens het verzenden van de video.");
+                    resultsSection.style.display = 'block';
+                    scoreDisplay.textContent = "ERR";
+                    analysisText.innerHTML = `<span style="color: #dc2626; font-weight: 600;">⚠️ Fout bij directe AI-analyse:</span>\n\n${error.message || error}`;
                 }
             };
         });
